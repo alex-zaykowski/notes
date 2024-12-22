@@ -133,4 +133,67 @@ Key Concepts:
             return True    
     \end{lstlisting}
 \end{flushleft}
+\section*{210. Course Schedule II}
+\begin{flushleft}
+    "Return the ordering of courses you should take to finish all courses. If there are many valid answers, return any of them. If it is impossible to finish all courses, return an empty array."
+\end{flushleft}
+\begin{flushleft}
+    Key Concepts:
+    \begin{itemize}
+        \item Topological Sort
+        \item BFS or DFS
+    \end{itemize}
+\end{flushleft}
+\begin{flushleft}
+    The most important concept here is \underline{topolocial sort}, if you read the problem carefully it is clear that we need to start with the
+    nodes (courses) that have no prerequisites. A topolocial sort is just ordering the nodes by degree of connections, the node(s) with 0 degrees
+    of connection (e.g. parents) will come first and each child will be added after.
+\end{flushleft}
+\begin{flushleft}
+    Like the previous problem, we will build an adjacency list, but this time do it in reverse to store which courses each prerequisite unlocks.
+    We will also keep track of the incoming edges to a node in a separate array we will call \textit{indegree}. Everytime we encounter an edge from a prerequisite
+    to the next node, we will increment its degree of incoming edges. The code will appear as follows:
+    \begin{lstlisting}[language=python]
+    def findOrder(self, numCourses: int, prerequisites: List[List[int]]):
+        courses = {i:[] for i in range(numCourses)}
+        indegree = [0] * numCourses #incoming edges to a node (incoming degree)
+
+        for nxt, pre in prerequisites: #nxt indicating the next node after the prereq
+            courses[pre].append(nxt)
+            indegree[nxt] += 1
+    \end{lstlisting}
+\end{flushleft}
+\begin{flushleft}
+    Finally, we will construct a queue and add all nodes with no incoming edges to it (all disjoint graphs). After that we will
+    perform a basic BFS similar to the DFS we did in the original course schdule problem. The only difference will be that in this one
+    we will only add a course to the queue when we have satisfied all of its prerequisites (e.g. its indegree is 0). How we do this
+    will be clear in the full solution code below:
+    \begin{lstlisting}[language=python]
+    class Solution:
+        def findOrder(self, numCourses: int, prerequisites: List[List[int]]):
+            courses = {i:[] for i in range(numCourses)}
+            indegree = [0] * numCourses #incoming edges to a node (incoming degree)
+
+            for nxt, pre in prerequisites: #nxt indicating the next node
+                courses[pre].append(nxt)
+                indegree[nxt] += 1
+            
+            q = collections.deque()
+            for i in range(numCourses): #add all courses w/ no prereqs
+                if indegree[i] == 0:
+                    q.append(i)
+
+            path = []
+            while q:
+                cur = q.popleft()
+                path.append(cur)
+                
+                for nxt in courses[cur]:
+                    indegree[nxt] -= 1 #we have satisfied a prereq
+                    if indegree[nxt] == 0:
+                        q.append(nxt)        
+            
+            return path if len(path) == numCourses else []
+    \end{lstlisting}
+\end{flushleft}
 \end{document}
